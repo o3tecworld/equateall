@@ -491,7 +491,7 @@ window.onerror = function (msg, url, line, col, err) {
         if (i < s.length && s[i] === "(") {
           i++;
           var arg = parseExpr();
-          if (s[i] !== ")") throw new Error("Missing )");
+          if (s[i] !== ")") throw new Error("This is missing a closing bracket \u2014 check every \u201c(\u201d has a matching \u201c)\u201d.");
           i++;
           if (name === "sqrt") return Math.sqrt(arg);
           if (name === "log") return Math.log10(arg);
@@ -500,18 +500,27 @@ window.onerror = function (msg, url, line, col, err) {
           if (name === "cos") return Math.cos(arg);
           if (name === "tan") return Math.tan(arg);
           if (name === "abs") return Math.abs(arg);
-          throw new Error("Unknown function: " + name);
+          throw new Error('"' + name + '(...)" isn\u2019t a function I know. Supported: sqrt, log, ln, sin, cos, tan, abs.');
         }
-        throw new Error("Unknown symbol: " + name + " (only \"" + varName + "\" is a variable here)");
+        throw new Error(
+          '"' + name + '" isn\u2019t something I can use here \u2014 the only letter this solves for is "' + varName +
+          '". If you meant multiplication (like 3 times x), write it as 3*' + varName + '.'
+        );
       }
-      throw new Error("Unexpected character: " + peek());
+      throw new Error(
+        peek() === undefined
+          ? "The equation looks incomplete \u2014 it seems to be missing something at the end."
+          : 'There\u2019s a symbol here I don\u2019t understand ("' + peek() + '"). ' +
+            'Stick to numbers, +  -  *  /  ^  ( )  =, and the letter "' + varName + '" as the unknown \u2014 ' +
+            'e.g. 3*' + varName + '^2 - 12 = 0.'
+      );
     }
 
     function parseAtom() {
       if (peek() === "(") {
         i++;
         var v = parseExpr();
-        if (s[i] !== ")") throw new Error("Missing )");
+        if (s[i] !== ")") throw new Error("This is missing a closing bracket \u2014 check every \u201c(\u201d has a matching \u201c)\u201d.");
         i++;
         return v;
       }
@@ -571,7 +580,13 @@ window.onerror = function (msg, url, line, col, err) {
 
     var result = parseExpr();
     skipWs();
-    if (i < s.length) throw new Error("Unexpected trailing text: " + s.slice(i));
+    if (i < s.length) {
+      throw new Error(
+        'I got stuck partway through, right around "' + s.slice(i) + '". ' +
+        'That usually means a symbol I don\u2019t recognize, or two numbers/letters sitting next to each other ' +
+        'without an operator between them.'
+      );
+    }
     return result;
   }
 
@@ -708,6 +723,17 @@ window.onerror = function (msg, url, line, col, err) {
 
   function normalizeMathText(raw) {
     var t = " " + raw.toLowerCase().trim() + " ";
+
+    // strip function notation: "f(x) =", "g(x)=", "y(x) =" -> just drop the label
+    t = t.replace(/\b[a-z]\s*\(\s*[a-z]\s*\)\s*=/g, " ");
+
+    // convert unicode superscripts (x³, x², x¹²) to caret notation (x^3, x^2, x^12)
+    var superscriptMap = { "\u2070": "0", "\u00b9": "1", "\u00b2": "2", "\u00b3": "3", "\u2074": "4", "\u2075": "5", "\u2076": "6", "\u2077": "7", "\u2078": "8", "\u2079": "9" };
+    t = t.replace(/[\u2070\u00b9\u00b2\u00b3\u2074-\u2079]+/g, function (run) {
+      var digits = "";
+      for (var k = 0; k < run.length; k++) digits += superscriptMap[run[k]];
+      return "^" + digits;
+    });
 
     // phrases that name the target variable — strip the whole lead-in
     t = t.replace(/\bsolve\s+for\s+[a-z]\b/g, " ");
@@ -925,7 +951,7 @@ window.onerror = function (msg, url, line, col, err) {
     wrap.innerHTML =
       '<div style="padding:16px;">' +
       '<div class="card-title" style="margin-bottom:2px;">Type any equation</div>' +
-      '<div style="color:#9AA79E;font-size:13px;margin-bottom:12px;">Works for algebra from any subject \u2014 physics, chemistry, economics, whatever has a single unknown.</div>' +
+      '<div style="color:#9AA79E;font-size:13px;margin-bottom:12px;">Works for algebra from any subject \u2014 physics, chemistry, economics, whatever has a single unknown. Powers use ^ (e.g. x^2), and skip function labels like "f(x) =" \u2014 just start from the equation itself.</div>' +
       fieldBlock("Equation", '<div class="eq-row"><input type="text" id="genEq" value="2*x + 5 = 15" placeholder="e.g. 3*x^2 - 12 = 0" />' +
         '<button class="mic-btn" id="micBtn" style="--accent:' + accent + ';" title="Speak the equation" aria-label="Speak the equation">' +
         '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>' +
