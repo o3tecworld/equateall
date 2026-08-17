@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EquateAll</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: #1E2A22;
+    background-image: radial-gradient(ellipse at top, rgba(255,255,255,0.04), transparent 60%);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #F1EFE7;
+  }
+  .mono { font-family: "SFMono-Regular", Menlo, Consolas, monospace; }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 18px 18px 60px; }
+  .header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .logo {
+    width: 28px; height: 28px; border-radius: 7px; background: #E8B34D;
+    display: flex; align-items: center; justify-content: center;
+    color: #182019; font-weight: 700; font-size: 14px;
+  }
+  .brand { font-weight: 700; font-size: 16px; letter-spacing: 0.3px; }
+  .eyebrow {
+    text-align: center; color: #9AA79E; font-size: 12px; letter-spacing: 1.5px;
+    margin: 24px 0 10px;
+  }
+  .hero {
+    text-align: center; font-size: clamp(26px, 8vw, 38px); font-weight: 700;
+    min-height: 50px; transition: opacity 0.3s;
+  }
+  .underline-wrap { display: flex; justify-content: center; margin-top: -2px; margin-bottom: 8px; }
+  .pills {
+    display: flex; gap: 8px; overflow-x: auto; padding: 12px 0 16px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .pill {
+    display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+    padding: 9px 14px; border-radius: 20px; border: 1px solid #3A473E;
+    background: transparent; color: #9AA79E; font-size: 13px; font-weight: 600;
+    cursor: pointer; white-space: nowrap;
+  }
+  .pill.active { background: var(--accent22); border-color: var(--accent); color: var(--accent); }
+  .code-label { color: #5F6C63; font-size: 11px; letter-spacing: 1px; margin-bottom: 12px; }
+  .card {
+    border: 1px solid #3A473E; border-radius: 10px; background: #212E26;
+    margin-bottom: 12px; overflow: hidden;
+  }
+  .card.open { border-color: var(--accent-a); }
+  .card-head {
+    width: 100%; display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; background: transparent; border: none; cursor: pointer; text-align: left;
+    color: inherit; font: inherit;
+  }
+  .card-title { font-weight: 600; font-size: 15px; color: #F1EFE7; }
+  .card-formula { font-size: 14px; margin-top: 3px; }
+  .chev { transition: transform 0.2s; flex-shrink: 0; margin-left: 8px; color: #9AA79E; }
+  .chev.open { transform: rotate(180deg); }
+  .card-body { padding: 0 16px 16px; display: none; }
+  .card-body.open { display: block; }
+  label.field-label { display: block; color: #9AA79E; font-size: 12px; margin-bottom: 4px; }
+  select, input[type=number], input[type=text] {
+    width: 100%; background: #182019; border: 1px solid #3A473E; border-radius: 7px;
+    color: #F1EFE7; font-size: 14px; padding: 9px 10px;
+  }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .solve-btn {
+    margin-top: 14px; width: 100%; border: none; border-radius: 8px; padding: 11px 0;
+    color: #182019; font-weight: 700; font-size: 14px; cursor: pointer; background: var(--accent);
+  }
+  .msg { margin-top: 12px; display: flex; gap: 8px; border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.4; }
+  .msg.error { color: #E8998E; background: #2E1F1D; border: 1px solid #4A2F2A; }
+  .msg.result { color: #F1EFE7; background: #182019; border: 1px solid var(--accent-a); font-size: 14px; line-height: 1.5; }
+  .hint {
+    margin-top: 8px; padding: 12px 14px; border: 1px dashed #3A473E; border-radius: 10px;
+    color: #7C897F; font-size: 12.5px; line-height: 1.5;
+  }
+  .hint strong { color: #9AA79E; }
+  .field-block { margin-bottom: 12px; }
+  input:focus, select:focus, button:focus-visible { outline: 2px solid #E8B34D; outline-offset: 1px; }
+  .eq-row { display: flex; gap: 8px; align-items: stretch; }
+  .eq-row input { flex: 1; min-width: 0; }
+  .mic-btn, .cam-btn {
+    flex-shrink: 0; width: 42px; border: 1px solid #3A473E; border-radius: 7px;
+    background: #182019; color: var(--accent); display: flex; align-items: center;
+    justify-content: center; cursor: pointer;
+  }
+  .mic-btn.listening { background: var(--accent); color: #182019; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+  #splash {
+    position: fixed; inset: 0; z-index: 100; background: #1E2A22;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity 0.5s ease; cursor: pointer;
+  }
+  #splash.hide { opacity: 0; pointer-events: none; }
+  #splashInner { text-align: center; }
+
+  .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .about-btn {
+    width: 32px; height: 32px; border-radius: 8px; border: 1px solid #3A473E;
+    background: transparent; color: #9AA79E; display: flex; align-items: center;
+    justify-content: center; cursor: pointer;
+  }
+  .about-btn:hover { color: #F1EFE7; border-color: #5F6C63; }
+
+  .modal-backdrop {
+    position: fixed; inset: 0; z-index: 90; background: rgba(0,0,0,0.55);
+    display: none; align-items: flex-end; justify-content: center;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal-card {
+    background: #212E26; border: 1px solid #3A473E; border-radius: 16px 16px 0 0;
+    max-width: 480px; width: 100%; padding: 20px; box-sizing: border-box;
+    max-height: 80vh; overflow-y: auto;
+  }
+  .modal-close {
+    background: transparent; border: none; color: #9AA79E; font-size: 22px;
+    line-height: 1; cursor: pointer; padding: 0 4px;
+  }
+
+  .working {
+    margin-top: 10px; padding-top: 10px; border-top: 1px dashed #3A473E;
+    font-size: 13px; color: #C9C4B5; line-height: 1.6;
+  }
+  .working-title { color: #7C897F; font-size: 11px; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .working-step { padding: 2px 0; }
+</style>
+</head>
+<body>
+<div id="splash">
+  <div id="splashInner">
+    <div class="logo" style="width:40px;height:40px;font-size:18px;margin:0 auto 14px;">=</div>
+    <div style="font-weight:700;font-size:20px;">EquateAll</div>
+    <div style="color:#9AA79E;font-size:12.5px;margin-top:14px;letter-spacing:0.5px;">SPONSORED BY O3TECWORLD</div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="header">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="logo">=</div>
+      <div class="brand">EquateAll</div>
+    </div>
+    <button id="aboutBtn" class="about-btn" aria-label="About EquateAll" title="About EquateAll">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+    </button>
+  </div>
+
+  <div class="eyebrow">PICK A COURSE &middot; STATE THE PROBLEM &middot; GET IT SOLVED</div>
+  <div class="hero mono" id="hero"></div>
+  <div class="underline-wrap">
+    <svg id="underline" viewBox="0 0 240 14" width="160" height="14" style="overflow:visible;">
+      <path d="M4 8 C 40 3, 80 11, 118 6 S 200 4, 236 9" fill="none" stroke="#E8B34D" stroke-width="3.5" stroke-linecap="round" style="stroke-dasharray:320; stroke-dashoffset:0; transition: stroke-dashoffset 0.9s ease-out, stroke 0.3s;" />
+    </svg>
+  </div>
+
+  <div class="pills" id="pills"></div>
+  <div class="code-label mono" id="codeLabel"></div>
+  <div id="content"></div>
+</div>
+
+<div id="aboutModal" class="modal-backdrop">
+  <div class="modal-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div style="font-weight:700;font-size:17px;">About EquateAll</div>
+      <button id="aboutCloseBtn" class="modal-close" aria-label="Close">&times;</button>
+    </div>
+    <div style="color:#C9C4B5;font-size:14px;line-height:1.6;margin-bottom:16px;">
+      EquateAll turns any course problem into a solved equation. Pick a subject &mdash; Math, Physics,
+      Chemistry, Biology, Economics, Computer Science, or Other &mdash; or just type, speak, or
+      photograph a problem in General, and EquateAll works it out and shows its steps, not just
+      the final answer.
+    </div>
+    <div style="border-top:1px solid #3A473E;padding-top:14px;margin-bottom:10px;">
+      <div style="color:#9AA79E;font-size:12px;letter-spacing:0.5px;margin-bottom:3px;">FOUNDERS</div>
+      <div style="font-size:14px;">o3tecworld</div>
+    </div>
+    <div>
+      <div style="color:#9AA79E;font-size:12px;letter-spacing:0.5px;margin-bottom:3px;">VERSION</div>
+      <div class="mono" style="font-size:14px;">1.0</div>
+    </div>
+  </div>
+</div>
+
+<script>
+window.onerror = function (msg, url, line, col, err) {
+  try {
+    var banner = document.createElement("div");
+    banner.style.cssText =
+      "position:fixed;top:0;left:0;right:0;z-index:999;background:#4a1f1f;color:#fff;" +
+      "padding:10px 12px;font-family:monospace;font-size:12px;white-space:pre-wrap;line-height:1.4;";
+    banner.textContent = "EquateAll error: " + msg + " (line " + line + ")";
+    document.body.appendChild(banner);
+  } catch (e) {}
+};
+(function () {
+  "use strict";
+
+  function round(n) {
+    if (!isFinite(n)) return n;
+    return Math.round(n * 1e6) / 1e6;
+  }
+
+  function buildFormulaSteps(f, values, target, resultValue, extra) {
+    var steps = [];
+    steps.push("Formula: " + f.display);
+    if (f.quadratic) {
+      var a = values.a, b = values.b, c = values.c;
+      var disc = round(b * b - 4 * a * c);
+      steps.push("a = " + a + ", b = " + b + ", c = " + c);
+      steps.push("Discriminant \u0394 = b\u00b2 \u2212 4ac = " + b + "\u00b2 \u2212 4(" + a + ")(" + c + ") = " + disc);
+      if (disc < 0) {
+        steps.push("\u0394 < 0, so the roots are complex.");
+      } else {
+        steps.push("x = (\u2212b \u00b1 \u221a\u0394) / 2a = (\u2212(" + b + ") \u00b1 \u221a" + disc + ") / (2\u00d7" + a + ")");
+      }
+      steps.push("x = " + resultValue.join(" or x = "));
+      return steps;
+    }
+    var given = f.variables
+      .filter(function (v) { return v.key !== target; })
+      .map(function (v) { return v.label + " = " + values[v.key] + (v.unit ? " " + v.unit : ""); })
+      .join(", ");
+    if (given) steps.push("Given: " + given);
+    var tv = f.variables.filter(function (v) { return v.key === target; })[0];
+    steps.push((tv ? tv.label : target) + " = " + resultValue + (tv && tv.unit ? " " + tv.unit : ""));
+    if (extra) {
+      Object.keys(extra).forEach(function (k) { steps.push(k + " = " + extra[k]); });
+    }
+    return steps;
+  }
+
+  function renderWorkingHtml(steps) {
+    if (!steps || steps.length === 0) return "";
+    return '<div class="working"><div class="working-title">WORKING</div>' +
+      steps.map(function (s) { return '<div class="working-step mono">' + s + "</div>"; }).join("") +
+      "</div>";
+  }
+
+  var SUBJECTS = [
+    { id: "general", code: "ANY-100", name: "General", accent: "#C9C4B5" },
+    { id: "math", code: "MATH-101", name: "Mathematics", accent: "#E8B34D" },
+    { id: "physics", code: "PHYS-201", name: "Physics", accent: "#5FB3D9" },
+    { id: "chem", code: "CHEM-150", name: "Chemistry", accent: "#9FD672" },
+    { id: "bio", code: "BIO-110", name: "Biology", accent: "#E07AA6" },
+    { id: "econ", code: "ECON-201", name: "Economics", accent: "#C79BE8" },
+    { id: "cs", code: "CS-101", name: "Computer Science", accent: "#4FD1C5" },
+    { id: "other", code: "OTHER-000", name: "Other", accent: "#A9B4C0" }
+  ];
+
+  var HERO_EQUATIONS = [
+    "F = m\u00b7a",
+    "E = mc\u00b2",
+    "pH = \u2212log[H\u207a]",
+    "N = N\u2080e^(rt)",
+    "GDP = C+I+G+NX",
+    "x = (\u2212b\u00b1\u221a(b\u00b2\u22124ac)) / 2a"
+  ];
+
+  var FORMULAS = [
+    {
+      id: "quadratic", subject: "math", title: "Quadratic formula",
+      display: "ax\u00b2 + bx + c = 0",
+      variables: [{ key: "a", label: "a" }, { key: "b", label: "b" }, { key: "c", label: "c" }],
+      quadratic: true,
+      solveRoots: function (v) {
+        var a = v.a, b = v.b, c = v.c;
+        if (a === 0) throw new Error("a can't be 0 \u2014 it wouldn't be quadratic.");
+        var disc = b * b - 4 * a * c;
+        if (disc < 0) {
+          var re = -b / (2 * a), im = Math.sqrt(-disc) / (2 * a);
+          return [round(re) + " + " + round(im) + "i", round(re) + " \u2212 " + round(im) + "i"];
+        }
+        var sq = Math.sqrt(disc);
+        return [round((-b + sq) / (2 * a)), round((-b - sq) / (2 * a))];
+      }
+    },
+    {
+      id: "percent", subject: "math", title: "Percentage",
+      display: "part = (percent / 100) \u00d7 whole",
+      variables: [{ key: "part", label: "Part" }, { key: "percent", label: "Percent", unit: "%" }, { key: "whole", label: "Whole" }],
+      solve: function (v, t) {
+        if (t === "part") return (v.percent / 100) * v.whole;
+        if (t === "percent") return (v.part / v.whole) * 100;
+        return v.part / (v.percent / 100);
+      }
+    },
+    {
+      id: "newton2", subject: "physics", title: "Newton's second law", display: "F = m \u00d7 a",
+      variables: [{ key: "F", label: "Force", unit: "N" }, { key: "m", label: "Mass", unit: "kg" }, { key: "a", label: "Acceleration", unit: "m/s\u00b2" }],
+      solve: function (v, t) {
+        if (t === "F") return v.m * v.a;
+        if (t === "m") return v.F / v.a;
+        return v.F / v.m;
+      }
+    },
+    {
+      id: "kinematics", subject: "physics", title: "Kinematics (velocity)", display: "v = u + a\u00b7t",
+      variables: [{ key: "v", label: "Final velocity", unit: "m/s" }, { key: "u", label: "Initial velocity", unit: "m/s" }, { key: "a", label: "Acceleration", unit: "m/s\u00b2" }, { key: "t", label: "Time", unit: "s" }],
+      solve: function (v, t) {
+        if (t === "v") return v.u + v.a * v.t;
+        if (t === "u") return v.v - v.a * v.t;
+        if (t === "a") return (v.v - v.u) / v.t;
+        return (v.v - v.u) / v.a;
+      }
+    },
+    {
+      id: "ohm", subject: "physics", title: "Ohm's law", display: "V = I \u00d7 R",
+      variables: [{ key: "V", label: "Voltage", unit: "V" }, { key: "I", label: "Current", unit: "A" }, { key: "R", label: "Resistance", unit: "\u03a9" }],
+      solve: function (v, t) {
+        if (t === "V") return v.I * v.R;
+        if (t === "I") return v.V / v.R;
+        return v.V / v.I;
+      }
+    },
+    {
+      id: "work", subject: "physics", title: "Work done", display: "W = F \u00d7 d",
+      variables: [{ key: "W", label: "Work", unit: "J" }, { key: "F", label: "Force", unit: "N" }, { key: "d", label: "Distance", unit: "m" }],
+      solve: function (v, t) {
+        if (t === "W") return v.F * v.d;
+        if (t === "F") return v.W / v.d;
+        return v.W / v.F;
+      }
+    },
+    {
+      id: "molarity", subject: "chem", title: "Molarity", display: "M = n / V",
+      variables: [{ key: "M", label: "Molarity", unit: "mol/L" }, { key: "n", label: "Moles of solute", unit: "mol" }, { key: "V", label: "Volume of solution", unit: "L" }],
+      solve: function (v, t) {
+        if (t === "M") return v.n / v.V;
+        if (t === "n") return v.M * v.V;
+        return v.n / v.M;
+      }
+    },
+    {
+      id: "dilution", subject: "chem", title: "Dilution", display: "M\u2081V\u2081 = M\u2082V\u2082",
+      variables: [{ key: "M1", label: "Initial molarity", unit: "mol/L" }, { key: "V1", label: "Initial volume", unit: "L" }, { key: "M2", label: "Final molarity", unit: "mol/L" }, { key: "V2", label: "Final volume", unit: "L" }],
+      solve: function (v, t) {
+        if (t === "M1") return (v.M2 * v.V2) / v.V1;
+        if (t === "V1") return (v.M2 * v.V2) / v.M1;
+        if (t === "M2") return (v.M1 * v.V1) / v.V2;
+        return (v.M1 * v.V1) / v.M2;
+      }
+    },
+    {
+      id: "ph", subject: "chem", title: "pH of a solution", display: "pH = \u2212log\u2081\u2080[H\u207a]",
+      variables: [{ key: "pH", label: "pH" }, { key: "H", label: "[H\u207a] concentration", unit: "mol/L" }],
+      solve: function (v, t) {
+        if (t === "pH") return -Math.log10(v.H);
+        return Math.pow(10, -v.pH);
+      }
+    },
+    {
+      id: "idealgas", subject: "chem", title: "Ideal gas law", display: "PV = nRT (R = 0.0821 L\u00b7atm/mol\u00b7K)",
+      variables: [{ key: "P", label: "Pressure", unit: "atm" }, { key: "V", label: "Volume", unit: "L" }, { key: "n", label: "Moles", unit: "mol" }, { key: "T", label: "Temperature", unit: "K" }],
+      solve: function (v, t) {
+        var R = 0.0821;
+        if (t === "P") return (v.n * R * v.T) / v.V;
+        if (t === "V") return (v.n * R * v.T) / v.P;
+        if (t === "n") return (v.P * v.V) / (R * v.T);
+        return (v.P * v.V) / (v.n * R);
+      }
+    },
+    {
+      id: "popgrowth", subject: "bio", title: "Exponential population growth", display: "N = N\u2080 \u00d7 e^(r\u00b7t)",
+      variables: [{ key: "N", label: "Final population" }, { key: "N0", label: "Initial population" }, { key: "r", label: "Growth rate", unit: "/time" }, { key: "t", label: "Time" }],
+      solve: function (v, t) {
+        if (t === "N") return v.N0 * Math.exp(v.r * v.t);
+        if (t === "N0") return v.N / Math.exp(v.r * v.t);
+        if (t === "r") return Math.log(v.N / v.N0) / v.t;
+        return Math.log(v.N / v.N0) / v.r;
+      }
+    },
+    {
+      id: "hardyweinberg", subject: "bio", title: "Hardy-Weinberg (allele \u2192 genotype)", display: "p\u00b2 + 2pq + q\u00b2 = 1, p + q = 1",
+      variables: [{ key: "p", label: "Allele freq. p" }, { key: "q", label: "Allele freq. q" }],
+      solve: function (v, t) {
+        if (t === "p") return 1 - v.q;
+        return 1 - v.p;
+      },
+      extra: function (v) {
+        var p = v.p !== undefined ? v.p : 1 - v.q;
+        var q = v.q !== undefined ? v.q : 1 - v.p;
+        var o = {};
+        o["p\u00b2 (homozygous dominant)"] = round(p * p);
+        o["2pq (heterozygous)"] = round(2 * p * q);
+        o["q\u00b2 (homozygous recessive)"] = round(q * q);
+        return o;
+      }
+    },
+    {
+      id: "bmi", subject: "bio", title: "Body mass index", display: "BMI = weight / height\u00b2",
+      variables: [{ key: "BMI", label: "BMI", unit: "kg/m\u00b2" }, { key: "weight", label: "Weight", unit: "kg" }, { key: "height", label: "Height", unit: "m" }],
+      solve: function (v, t) {
+        if (t === "BMI") return v.weight / (v.height * v.height);
+        if (t === "weight") return v.BMI * v.height * v.height;
+        return Math.sqrt(v.weight / v.BMI);
+      }
+    },
+    {
+      id: "simpleinterest", subject: "econ", title: "Simple interest", display: "I = P \u00d7 r \u00d7 t",
+      variables: [{ key: "I", label: "Interest", unit: "$" }, { key: "P", label: "Principal", unit: "$" }, { key: "r", label: "Rate (decimal)" }, { key: "t", label: "Time", unit: "yrs" }],
+      solve: function (v, t) {
+        if (t === "I") return v.P * v.r * v.t;
+        if (t === "P") return v.I / (v.r * v.t);
+        if (t === "r") return v.I / (v.P * v.t);
+        return v.I / (v.P * v.r);
+      }
+    },
+    {
+      id: "compoundinterest", subject: "econ", title: "Compound interest", display: "A = P(1 + r/n)^(n\u00b7t)",
+      variables: [{ key: "A", label: "Final amount", unit: "$" }, { key: "P", label: "Principal", unit: "$" }, { key: "r", label: "Annual rate (decimal)" }, { key: "n", label: "Compounds per year" }, { key: "t", label: "Years" }],
+      solve: function (v, t) {
+        if (t === "A") return v.P * Math.pow(1 + v.r / v.n, v.n * v.t);
+        if (t === "P") return v.A / Math.pow(1 + v.r / v.n, v.n * v.t);
+        throw new Error("Solve for A or P here \u2014 solving for r, n or t needs the General solver.");
+      }
+    },
+    {
+      id: "gdp", subject: "econ", title: "GDP (expenditure approach)", display: "GDP = C + I + G + NX",
+      variables: [{ key: "GDP", label: "GDP", unit: "$" }, { key: "C", label: "Consumption", unit: "$" }, { key: "I", label: "Investment", unit: "$" }, { key: "G", label: "Gov't spending", unit: "$" }, { key: "NX", label: "Net exports", unit: "$" }],
+      solve: function (v, t) {
+        if (t === "GDP") return v.C + v.I + v.G + v.NX;
+        var keys = ["C", "I", "G", "NX"].filter(function (k) { return k !== t; });
+        var sum = 0;
+        keys.forEach(function (k) { sum += v[k]; });
+        return v.GDP - sum;
+      }
+    },
+    {
+      id: "bitcombos", subject: "cs", title: "Bit combinations", display: "N = 2^n",
+      variables: [{ key: "N", label: "Possible values" }, { key: "n", label: "Bits" }],
+      solve: function (v, t) {
+        if (t === "N") return Math.pow(2, v.n);
+        return Math.log2(v.N);
+      }
+    },
+    {
+      id: "transfertime", subject: "cs", title: "Data transfer time", display: "t = size / bandwidth",
+      variables: [{ key: "t", label: "Time", unit: "s" }, { key: "size", label: "File size", unit: "MB" }, { key: "bandwidth", label: "Bandwidth", unit: "MB/s" }],
+      solve: function (v, t) {
+        if (t === "t") return v.size / v.bandwidth;
+        if (t === "size") return v.t * v.bandwidth;
+        return v.size / v.t;
+      }
+    },
+    {
+      id: "clocktime", subject: "cs", title: "CPU clock time", display: "t = cycles / frequency",
+      variables: [{ key: "t", label: "Time", unit: "s" }, { key: "cycles", label: "Cycles" }, { key: "frequency", label: "Frequency", unit: "Hz" }],
+      solve: function (v, t) {
+        if (t === "t") return v.cycles / v.frequency;
+        if (t === "cycles") return v.t * v.frequency;
+        return v.cycles / v.t;
+      }
+    },
+    {
+      id: "bigofit", subject: "cs", title: "Runtime estimate", display: "t = operations / speed",
+      variables: [{ key: "t", label: "Time", unit: "s" }, { key: "operations", label: "Operations" }, { key: "speed", label: "Speed", unit: "ops/s" }],
+      solve: function (v, t) {
+        if (t === "t") return v.operations / v.speed;
+        if (t === "operations") return v.t * v.speed;
+        return v.operations / v.t;
+      }
+    }
+  ];
+
+  /* ---- tiny safe expression evaluator (no eval, supports + - * / ^ ( ) and one variable) ---- */
+  function evalExpr(expr, varName, varValue) {
+    var i = 0;
+    var s = expr;
+
+    function peek() { return s[i]; }
+    function isDigit(c) { return c >= "0" && c <= "9"; }
+    function isAlpha(c) { return /[a-zA-Z_]/.test(c); }
+
+    function parseNumberOrVar() {
+      if (isDigit(peek()) || peek() === ".") {
+        var start = i;
+        while (i < s.length && (isDigit(s[i]) || s[i] === ".")) i++;
+        return parseFloat(s.slice(start, i));
+      }
+      if (isAlpha(peek())) {
+        var start2 = i;
+        while (i < s.length && /[a-zA-Z0-9_]/.test(s[i])) i++;
+        var name = s.slice(start2, i);
+        if (name === varName) return varValue;
+        if (name === "e") return Math.E;
+        if (name === "pi") return Math.PI;
+        if (i < s.length && s[i] === "(") {
+          i++;
+          var arg = parseExpr();
+          if (s[i] !== ")") throw new Error("Missing )");
+          i++;
+          if (name === "sqrt") return Math.sqrt(arg);
+          if (name === "log") return Math.log10(arg);
+          if (name === "ln") return Math.log(arg);
+          if (name === "sin") return Math.sin(arg);
+          if (name === "cos") return Math.cos(arg);
+          if (name === "tan") return Math.tan(arg);
+          if (name === "abs") return Math.abs(arg);
+          throw new Error("Unknown function: " + name);
+        }
+        throw new Error("Unknown symbol: " + name + " (only \"" + varName + "\" is a variable here)");
+      }
+      throw new Error("Unexpected character: " + peek());
+    }
+
+    function parseAtom() {
+      if (peek() === "(") {
+        i++;
+        var v = parseExpr();
+        if (s[i] !== ")") throw new Error("Missing )");
+        i++;
+        return v;
+      }
+      if (peek() === "-") { i++; return -parseAtom(); }
+      if (peek() === "+") { i++; return parseAtom(); }
+      return parseNumberOrVar();
+    }
+
+    function parsePow() {
+      var base = parseAtom();
+      skipWs();
+      if (peek() === "^") {
+        i++;
+        skipWs();
+        var exp = parsePow();
+        return Math.pow(base, exp);
+      }
+      return base;
+    }
+
+    function parseTerm() {
+      var v = parsePow();
+      skipWs();
+      while (peek() === "*" || peek() === "/" || isImplicitFactorStart()) {
+        if (peek() === "*" || peek() === "/") {
+          var op = peek(); i++; skipWs();
+          var rhs = parsePow();
+          v = op === "*" ? v * rhs : v / rhs;
+        } else {
+          var rhs2 = parsePow();
+          v = v * rhs2;
+        }
+        skipWs();
+      }
+      return v;
+    }
+
+    function isImplicitFactorStart() {
+      var c = peek();
+      return c !== undefined && (isDigit(c) || isAlpha(c) || c === "(");
+    }
+
+    function parseExpr() {
+      skipWs();
+      var v = parseTerm();
+      skipWs();
+      while (peek() === "+" || peek() === "-") {
+        var op = peek(); i++; skipWs();
+        var rhs = parseTerm();
+        v = op === "+" ? v + rhs : v - rhs;
+        skipWs();
+      }
+      return v;
+    }
+
+    function skipWs() { while (i < s.length && s[i] === " ") i++; }
+
+    var result = parseExpr();
+    skipWs();
+    if (i < s.length) throw new Error("Unexpected trailing text: " + s.slice(i));
+    return result;
+  }
+
+  function expressionUsesVariable(expr, variable) {
+    var i = 0;
+    while (i < expr.length) {
+      var c = expr[i];
+      if (/[a-zA-Z_]/.test(c)) {
+        var start = i;
+        while (i < expr.length && /[a-zA-Z0-9_]/.test(expr[i])) i++;
+        if (expr.slice(start, i) === variable) return true;
+      } else {
+        i++;
+      }
+    }
+    return false;
+  }
+
+  function analyzeGeneralWorking(lhs, rhs, varName, roots) {
+    var steps = [];
+    function f(x) { return evalExpr(lhs, varName, x) - evalExpr(rhs, varName, x); }
+    try {
+      var fm1 = f(-1), f0 = f(0), f1 = f(1), f2 = f(2);
+      var a = (f1 + fm1 - 2 * f0) / 2;
+      var b = (f1 - fm1) / 2;
+      var c = f0;
+      var predicted2 = a * 4 + b * 2 + c;
+      var isQuadratic = Math.abs(predicted2 - f2) < 1e-6 && Math.abs(a) > 1e-9;
+      var isLinear = Math.abs(a) < 1e-9;
+      if (isLinear) {
+        steps.push("Combining like terms: " + round(b) + varName + " + (" + round(c) + ") = 0");
+        if (Math.abs(b) > 1e-12) {
+          steps.push(varName + " = " + round(-c) + " / " + round(b) + " = " + round(-c / b));
+        }
+      } else if (isQuadratic) {
+        var disc = round(b * b - 4 * a * c);
+        steps.push("Rewritten as: " + round(a) + varName + "\u00b2 + (" + round(b) + ")" + varName + " + (" + round(c) + ") = 0");
+        steps.push("Discriminant \u0394 = b\u00b2 \u2212 4ac = " + disc);
+        if (disc >= 0) steps.push(varName + " = (\u2212b \u00b1 \u221a\u0394) / 2a");
+      } else {
+        steps.push("Not a simple linear/quadratic form \u2014 solved numerically by iterative approximation.");
+      }
+    } catch (e) {
+      steps.push("Solved numerically by iterative approximation.");
+    }
+    if (roots && roots.length) {
+      roots.forEach(function (r) {
+        try {
+          var lv = round(evalExpr(lhs, varName, r));
+          var rv = round(evalExpr(rhs, varName, r));
+          steps.push("Check " + varName + " = " + r + ": left = " + lv + ", right = " + rv);
+        } catch (e) {}
+      });
+    }
+    return steps;
+  }
+
+  function solveGeneral(eqRaw, variable) {
+    var cleaned = eqRaw
+      .replace(/[×✕]/g, "*")
+      .replace(/[÷]/g, "/")
+      .replace(/[−–—]/g, "-")
+      .replace(/(\d),(?=\d{3}(\D|$))/g, "$1")
+      .replace(/\s+/g, "");
+    if (!cleaned) throw new Error("Type an equation first.");
+    var hadEquals = cleaned.indexOf("=") !== -1;
+    var lhs, rhs;
+    if (hadEquals) {
+      var parts = cleaned.split("=");
+      if (parts.length !== 2) throw new Error('Use exactly one "=" sign.');
+      lhs = parts[0]; rhs = parts[1];
+    } else {
+      lhs = cleaned; rhs = "0";
+    }
+    var varName = variable || "x";
+    var usesVar = expressionUsesVariable(lhs, varName) || expressionUsesVariable(rhs, varName);
+
+    if (!usesVar) {
+      var leftVal = evalExpr(lhs, varName, 0);
+      if (!hadEquals) {
+        return { type: "value", value: round(leftVal), lhs: lhs, rhs: rhs, varName: varName };
+      }
+      var rightVal = evalExpr(rhs, varName, 0);
+      return { type: "check", left: round(leftVal), right: round(rightVal), equal: Math.abs(leftVal - rightVal) < 1e-6, lhs: lhs, rhs: rhs, varName: varName };
+    }
+
+    function f(x) {
+      var lv = evalExpr(lhs, varName, x);
+      var rv = evalExpr(rhs, varName, x);
+      return lv - rv;
+    }
+    // check parse validity first
+    f(1);
+
+    var starts = [-50, -10, -5, -2, -1, -0.5, 0.0001, 0.5, 1, 2, 5, 10, 50];
+    var roots = [];
+    for (var s0 = 0; s0 < starts.length; s0++) {
+      var x = starts[s0];
+      var converged = false;
+      for (var iter = 0; iter < 150; iter++) {
+        var fx, dfx;
+        try {
+          fx = f(x);
+          var h = 1e-6;
+          dfx = (f(x + h) - f(x - h)) / (2 * h);
+        } catch (e) { break; }
+        if (!isFinite(fx) || !isFinite(dfx) || Math.abs(dfx) < 1e-12) break;
+        var xNew = x - fx / dfx;
+        if (!isFinite(xNew)) break;
+        if (Math.abs(xNew - x) < 1e-9) { x = xNew; converged = true; break; }
+        x = xNew;
+      }
+      if (converged) {
+        var r = round(x);
+        var dup = false;
+        for (var j = 0; j < roots.length; j++) if (Math.abs(roots[j] - r) < 1e-4) dup = true;
+        if (!dup) roots.push(r);
+      }
+    }
+    if (roots.length === 0) throw new Error("Couldn't find a real solution \u2014 double check the equation.");
+    roots.sort(function (a, b) { return a - b; });
+    return { type: "roots", roots: roots, lhs: lhs, rhs: rhs, varName: varName };
+  }
+
+  /* ---------------- voice input ---------------- */
+  function extractSolveForVariable(text) {
+    var lower = text.toLowerCase();
+    var m =
+      lower.match(/solve\s+for\s+([a-z])\b/) ||
+      lower.match(/\bfind\s+([a-z])\s+(?:when|if|such that|where)\b/) ||
+      lower.match(/^\s*([a-z])\s+(?:when|if)\b/);
+    return m ? m[1] : null;
+  }
+
+  function normalizeMathText(raw) {
+    var t = " " + raw.toLowerCase().trim() + " ";
+
+    // phrases that name the target variable — strip the whole lead-in
+    t = t.replace(/\bsolve\s+for\s+[a-z]\b/g, " ");
+    t = t.replace(/\bfind\s+[a-z]\s+(?:when|if|such that|where)\b/g, " ");
+    t = t.replace(/^\s*[a-z]\s+(?:when|if)\b/g, " ");
+
+    // strip question fluff / instruction wording
+    t = t.replace(/\b(please\s+)?(what\s+is|what's|whats|how\s+much\s+is|calculate|compute|find|evaluate|solve)\b/g, " ");
+    t = t.replace(/\b(if|when|then|the)\b/g, " ");
+    t = t.replace(/\?/g, " ");
+
+    // "N percent/% of M" -> ((N/100)*M)
+    t = t.replace(/(\d+(\.\d+)?)\s*(percent|%)\s*of\s*(\d+(\.\d+)?)/g, "(($1/100)*$4)");
+
+    // "square root of <token>" -> sqrt(<token>)
+    t = t.replace(/\bsquare\s+root\s+of\s*([a-z0-9.]+)/g, "sqrt($1)");
+
+    var replacements = [
+      [/\bdivided by\b/g, " / "],
+      [/\bmultiplied by\b/g, " * "],
+      [/\btimes\b/g, " * "],
+      [/\badded to\b/g, " + "],
+      [/\bplus\b/g, " + "],
+      [/\bminus\b/g, " - "],
+      [/\bover\b/g, " / "],
+      [/\bis equal to\b/g, " = "],
+      [/\bequals\b/g, " = "],
+      [/\bequal\b/g, " = "],
+      [/\bsquared\b/g, "^2"],
+      [/\bcubed\b/g, "^3"],
+      [/\bto the power of\b/g, "^"],
+      [/\bopen paren(thesis)?\b/g, " ( "],
+      [/\bclose paren(thesis)?\b/g, " ) "],
+      [/\bpoint\b/g, "."]
+    ];
+    replacements.forEach(function (r) { t = t.replace(r[0], r[1]); });
+
+    // unicode operator symbols
+    t = t.replace(/[×✕]/g, "*").replace(/[÷]/g, "/").replace(/[−–—]/g, "-").replace(/[’‘`]/g, "'");
+
+    // commas as thousand separators, e.g. 20,000 -> 20000
+    t = t.replace(/(\d),(?=\d{3}(\D|$))/g, "$1");
+
+    t = t.replace(/\s+/g, " ").trim();
+    return t;
+  }
+
+  function getSpeechRecognition() {
+    return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+  }
+
+  function wireMicButton(btnId, inputId, statusId) {
+    var btn = document.getElementById(btnId);
+    if (!btn) return;
+    var SR = getSpeechRecognition();
+    if (!SR) {
+      btn.onclick = function () {
+        var status = document.getElementById(statusId);
+        if (status) status.innerHTML = '<div class="msg error">Voice input isn\'t supported in this browser. Try Chrome on Android.</div>';
+      };
+      return;
+    }
+    var recognition = new SR();
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    var listening = false;
+
+    recognition.onresult = function (event) {
+      var transcript = event.results[0][0].transcript;
+      var normalized = normalizeMathText(transcript);
+      var input = document.getElementById(inputId);
+      if (input) input.value = normalized;
+      btn.classList.remove("listening");
+      listening = false;
+    };
+    recognition.onerror = function () {
+      var status = document.getElementById(statusId);
+      if (status) status.innerHTML = '<div class="msg error">Couldn\'t hear that \u2014 check mic permission and try again.</div>';
+      btn.classList.remove("listening");
+      listening = false;
+    };
+    recognition.onend = function () {
+      btn.classList.remove("listening");
+      listening = false;
+    };
+
+    btn.onclick = function () {
+      if (listening) { recognition.stop(); return; }
+      var status = document.getElementById(statusId);
+      if (status) status.innerHTML = "";
+      try {
+        recognition.start();
+        listening = true;
+        btn.classList.add("listening");
+      } catch (e) {
+        if (status) status.innerHTML = '<div class="msg error">Couldn\'t start the microphone.</div>';
+      }
+    };
+  }
+
+  /* ---------------- camera / photo OCR input ---------------- */
+  function normalizeOCRMath(text) {
+    var t = (text || "").replace(/\r/g, "").replace(/\n+/g, " ").trim();
+    return normalizeMathText(t);
+  }
+
+  var tesseractWorkerPromise = null;
+  function getTesseractWorker(onProgress) {
+    if (!window.Tesseract) {
+      return Promise.reject(new Error("OCR library isn't available \u2014 check your internet connection and try again."));
+    }
+    if (!tesseractWorkerPromise) {
+      tesseractWorkerPromise = window.Tesseract.createWorker("eng", 1, {
+        logger: function (m) { if (onProgress) onProgress(m); }
+      });
+    }
+    return tesseractWorkerPromise;
+  }
+
+  function loadTesseractScript(onReady, onError) {
+    if (window.Tesseract) { onReady(); return; }
+    var existing = document.getElementById("tesseractScript");
+    if (existing) {
+      existing.addEventListener("load", onReady);
+      existing.addEventListener("error", function () { onError(new Error("Couldn't load the OCR library \u2014 check your connection.")); });
+      return;
+    }
+    var s = document.createElement("script");
+    s.id = "tesseractScript";
+    s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+    s.onload = onReady;
+    s.onerror = function () { onError(new Error("Couldn't load the OCR library \u2014 check your connection.")); };
+    document.head.appendChild(s);
+  }
+
+  function wireCameraButton(btnId, fileInputId, inputId, statusId) {
+    var btn = document.getElementById(btnId);
+    var fileInput = document.getElementById(fileInputId);
+    if (!btn || !fileInput) return;
+
+    btn.onclick = function () { fileInput.click(); };
+
+    fileInput.onchange = function (e) {
+      var file = e.target.files && e.target.files[0];
+      fileInput.value = "";
+      if (!file) return;
+      var status = document.getElementById(statusId);
+      if (status) status.innerHTML = '<div class="msg result">Reading photo\u2026</div>';
+
+      loadTesseractScript(function () {
+        getTesseractWorker(function (m) {
+          if (status && m && m.status === "recognizing text") {
+            status.innerHTML = '<div class="msg result">Reading photo\u2026 ' + Math.round((m.progress || 0) * 100) + "%</div>";
+          }
+        }).then(function (worker) {
+          return worker.recognize(file);
+        }).then(function (result) {
+          var text = normalizeOCRMath(result.data.text);
+          var input = document.getElementById(inputId);
+          if (input) input.value = text;
+          if (status) {
+            status.innerHTML = text
+              ? '<div class="msg result">Got it \u2014 double check the equation below before solving.</div>'
+              : '<div class="msg error">Couldn\'t make out any text \u2014 try a closer, well-lit shot.</div>';
+          }
+        }).catch(function (err) {
+          if (status) status.innerHTML = '<div class="msg error">' + (err.message || "Couldn't read that photo. Try a clearer shot.") + "</div>";
+        });
+      }, function (err) {
+        if (status) status.innerHTML = '<div class="msg error">' + err.message + "</div>";
+      });
+    };
+  }
+
+  /* ---------------- state + rendering ---------------- */
+  var state = { subject: "general", heroIndex: 0, openCard: null, cardValues: {}, cardTarget: {} };
+
+  function accentFor(id) {
+    for (var i = 0; i < SUBJECTS.length; i++) if (SUBJECTS[i].id === id) return SUBJECTS[i].accent;
+    return "#C9C4B5";
+  }
+
+  function hexToRgba(hex, alpha) {
+    var r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+    return "rgba(" + r + "," + g + "," + b + "," + alpha + ")";
+  }
+
+  function renderPills() {
+    var el = document.getElementById("pills");
+    el.innerHTML = "";
+    SUBJECTS.forEach(function (s) {
+      var btn = document.createElement("button");
+      btn.className = "pill" + (s.id === state.subject ? " active" : "");
+      btn.style.setProperty("--accent", s.accent);
+      btn.style.setProperty("--accent22", hexToRgba(s.accent, 0.13));
+      btn.textContent = s.name;
+      btn.onclick = function () {
+        state.subject = s.id;
+        state.openCard = null;
+        renderAll();
+      };
+      el.appendChild(btn);
+    });
+  }
+
+  function fieldBlock(label, inputHtml) {
+    return '<div class="field-block"><label class="field-label">' + label + "</label>" + inputHtml + "</div>";
+  }
+
+  function renderGeneralSolver(accent) {
+    var wrap = document.createElement("div");
+    wrap.className = "card open";
+    wrap.style.setProperty("--accent-a", hexToRgba(accent, 0.35));
+    wrap.innerHTML =
+      '<div style="padding:16px;">' +
+      '<div class="card-title" style="margin-bottom:2px;">Type any equation</div>' +
+      '<div style="color:#9AA79E;font-size:13px;margin-bottom:12px;">Works for algebra from any subject \u2014 physics, chemistry, economics, whatever has a single unknown.</div>' +
+      fieldBlock("Equation", '<div class="eq-row"><input type="text" id="genEq" value="2*x + 5 = 15" placeholder="e.g. 3*x^2 - 12 = 0" />' +
+        '<button class="mic-btn" id="micBtn" style="--accent:' + accent + ';" title="Speak the equation" aria-label="Speak the equation">' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>' +
+        "</button>" +
+        '<button class="cam-btn" id="camBtn" style="--accent:' + accent + ';" title="Photograph the equation" aria-label="Photograph the equation">' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>' +
+        "</button>" +
+        '<input type="file" accept="image/*" capture="environment" id="camFile" style="display:none;" />' +
+        "</div>") +
+      '<div id="micStatus"></div>' +
+      fieldBlock("Unknown variable", '<input type="text" id="genVar" value="x" style="width:80px;" />') +
+      '<button class="solve-btn" id="genSolveBtn" style="--accent:' + accent + ';">Solve</button>' +
+      '<div id="genResult"></div>' +
+      "</div>";
+    var content = document.getElementById("content");
+    content.appendChild(wrap);
+
+    wireMicButton("micBtn", "genEq", "micStatus");
+    wireCameraButton("camBtn", "camFile", "genEq", "micStatus");
+
+    document.getElementById("genSolveBtn").onclick = function () {
+      var raw = document.getElementById("genEq").value;
+      var manualVar = document.getElementById("genVar").value;
+      var out = document.getElementById("genResult");
+      var accentA = hexToRgba(accent, 0.35);
+      try {
+        var detectedVar = extractSolveForVariable(raw);
+        var vr = detectedVar || manualVar || "x";
+        var normalized = normalizeMathText(raw);
+        if (detectedVar) document.getElementById("genVar").value = detectedVar;
+
+        var result = solveGeneral(normalized, vr);
+        var html = '<div style="color:#7C897F;font-size:12px;margin-bottom:6px;">Read as: <span class="mono">' + normalized + "</span></div>";
+        var workingSteps = [];
+        if (result.type === "value") {
+          html += "= <strong>" + result.value + "</strong>";
+          workingSteps = [result.lhs + " = " + result.value];
+        } else if (result.type === "check") {
+          html += result.equal
+            ? "\u2713 Checks out \u2014 both sides equal " + result.left
+            : "\u2717 Not equal \u2014 left = " + result.left + ", right = " + result.right;
+          workingSteps = [result.lhs + " = " + result.left, result.rhs + " = " + result.right];
+        } else {
+          html += vr + " = " + result.roots.join(",  ");
+          workingSteps = analyzeGeneralWorking(result.lhs, result.rhs, result.varName, result.roots);
+        }
+        html += renderWorkingHtml(workingSteps);
+        out.innerHTML = '<div class="msg result" style="--accent-a:' + accentA + ';">' + html + "</div>";
+      } catch (e) {
+        out.innerHTML = '<div class="msg error">' + e.message + "</div>";
+      }
+    };
+  }
+
+  function renderFormulaCard(f, accent) {
+    var card = document.createElement("div");
+    var isOpen = state.openCard === f.id;
+    card.className = "card" + (isOpen ? " open" : "");
+    card.style.setProperty("--accent-a", hexToRgba(accent, 0.35));
+
+    var head = document.createElement("button");
+    head.className = "card-head";
+    head.innerHTML =
+      '<div><div class="card-title">' + f.title + '</div><div class="card-formula mono" style="color:' + accent + ';">' + f.display + "</div></div>" +
+      '<span class="chev' + (isOpen ? " open" : "") + '">\u25be</span>';
+    head.onclick = function () {
+      state.openCard = isOpen ? null : f.id;
+      renderAll();
+    };
+    card.appendChild(head);
+
+    var body = document.createElement("div");
+    body.className = "card-body" + (isOpen ? " open" : "");
+
+    if (isOpen) {
+      var target = f.quadratic ? "roots" : (state.cardTarget[f.id] || f.variables[0].key);
+      state.cardTarget[f.id] = target;
+      var vals = state.cardValues[f.id] || {};
+      state.cardValues[f.id] = vals;
+
+      var html = "";
+      if (!f.quadratic) {
+        var opts = f.variables.map(function (v) {
+          var lbl = v.label + (v.unit ? " (" + v.unit + ")" : "");
+          return '<option value="' + v.key + '"' + (v.key === target ? " selected" : "") + ">" + lbl + "</option>";
+        }).join("");
+        html += fieldBlock("Solve for", '<select id="target-' + f.id + '">' + opts + "</select>");
+      }
+
+      var inputVars = f.quadratic ? f.variables : f.variables.filter(function (v) { return v.key !== target; });
+      html += '<div class="grid2">';
+      inputVars.forEach(function (v) {
+        var lbl = v.label + (v.unit ? " (" + v.unit + ")" : "");
+        var existing = vals[v.key] !== undefined ? vals[v.key] : "";
+        html += fieldBlock(lbl, '<input type="number" inputmode="decimal" placeholder="0" data-key="' + v.key + '" class="varInput-' + f.id + '" value="' + existing + '" />');
+      });
+      html += "</div>";
+      html += '<button class="solve-btn" id="solveBtn-' + f.id + '" style="--accent:' + accent + ';">Solve</button>';
+      html += '<div id="result-' + f.id + '"></div>';
+      body.innerHTML = html;
+    }
+
+    card.appendChild(body);
+
+    if (isOpen) {
+      var content = document.getElementById("content");
+      content.appendChild(card);
+
+      var targetSel = document.getElementById("target-" + f.id);
+      if (targetSel) {
+        targetSel.onchange = function () {
+          state.cardTarget[f.id] = targetSel.value;
+          renderAll();
+        };
+      }
+
+      var inputs = card.querySelectorAll(".varInput-" + f.id);
+      inputs.forEach(function (inp) {
+        inp.oninput = function () {
+          state.cardValues[f.id][inp.getAttribute("data-key")] = inp.value;
+        };
+      });
+
+      var solveBtn = document.getElementById("solveBtn-" + f.id);
+      solveBtn.onclick = function () {
+        var out = document.getElementById("result-" + f.id);
+        try {
+          var parsed = {};
+          var currentTarget = f.quadratic ? "roots" : state.cardTarget[f.id];
+          var neededVars = f.quadratic ? f.variables : f.variables.filter(function (v) { return v.key !== currentTarget; });
+          neededVars.forEach(function (v) {
+            var raw = state.cardValues[f.id][v.key];
+            var n = parseFloat(raw);
+            if (raw === undefined || raw === "" || isNaN(n)) throw new Error("Fill in " + v.label + ".");
+            parsed[v.key] = n;
+          });
+          if (f.quadratic) {
+            var roots = f.solveRoots(parsed);
+            var stepsQ = buildFormulaSteps(f, parsed, "roots", roots);
+            out.innerHTML = '<div class="msg result" style="--accent-a:' + hexToRgba(accent, 0.35) + ';">x = ' + roots[0] + " or x = " + roots[1] +
+              renderWorkingHtml(stepsQ) + "</div>";
+          } else {
+            var val = f.solve(parsed, currentTarget);
+            var tv = f.variables.filter(function (v) { return v.key === currentTarget; })[0];
+            var extraVal = null;
+            var extraHtml = "";
+            if (f.extra) {
+              extraVal = f.extra(Object.assign({}, parsed, (function () { var o = {}; o[currentTarget] = val; return o; })()));
+              extraHtml = '<div style="margin-top:6px;font-size:13px;color:#C9C4B5;">' +
+                Object.keys(extraVal).map(function (k) { return k + ": " + extraVal[k]; }).join("<br/>") + "</div>";
+            }
+            var stepsF = buildFormulaSteps(f, parsed, currentTarget, round(val), extraVal);
+            out.innerHTML = '<div class="msg result" style="--accent-a:' + hexToRgba(accent, 0.35) + ';">' +
+              tv.label + " = <strong>" + round(val) + "</strong> " + (tv.unit || "") + extraHtml +
+              renderWorkingHtml(stepsF) + "</div>";
+          }
+        } catch (e) {
+          out.innerHTML = '<div class="msg error">' + e.message + "</div>";
+        }
+      };
+    }
+
+    return card;
+  }
+
+  function renderAll() {
+    var activeSubject = SUBJECTS.filter(function (s) { return s.id === state.subject; })[0];
+    document.documentElement.style.setProperty("--accent", activeSubject.accent);
+
+    renderPills();
+    document.getElementById("codeLabel").textContent = activeSubject.code;
+
+    var underline = document.getElementById("underline").querySelector("path");
+    underline.setAttribute("stroke", activeSubject.accent);
+
+    var content = document.getElementById("content");
+    content.innerHTML = "";
+
+    if (state.subject === "general") {
+      renderGeneralSolver(activeSubject.accent);
+    }
+
+    var formulas = FORMULAS.filter(function (f) { return f.subject === state.subject; });
+    formulas.forEach(function (f) {
+      renderFormulaCard(f, activeSubject.accent);
+    });
+
+    if (state.subject !== "general") {
+      var hint = document.createElement("div");
+      hint.className = "hint";
+      hint.innerHTML = 'Don\'t see the formula you need? Switch to <strong>General</strong> \u2014 type or speak any equation and it solves for the unknown directly.';
+      content.appendChild(hint);
+    }
+  }
+
+  function cycleHero() {
+    var hero = document.getElementById("hero");
+    var underline = document.getElementById("underline").querySelector("path");
+    underline.style.strokeDashoffset = "320";
+    setTimeout(function () {
+      state.heroIndex = (state.heroIndex + 1) % HERO_EQUATIONS.length;
+      hero.textContent = HERO_EQUATIONS[state.heroIndex];
+      underline.style.strokeDashoffset = "0";
+    }, 150);
+  }
+
+  document.getElementById("hero").textContent = HERO_EQUATIONS[0];
+  renderAll();
+  setInterval(cycleHero, 2600);
+
+  /* ---- splash screen ---- */
+  try {
+    var splash = document.getElementById("splash");
+    function dismissSplash() {
+      splash.classList.add("hide");
+      setTimeout(function () { splash.style.display = "none"; }, 550);
+    }
+    splash.addEventListener("click", dismissSplash);
+    setTimeout(dismissSplash, 1700);
+  } catch (errSplash) {
+    window.onerror("Splash setup failed: " + errSplash.message, "", 0);
+  }
+
+  /* ---- about modal ---- */
+  try {
+    var aboutModal = document.getElementById("aboutModal");
+    var aboutBtnEl = document.getElementById("aboutBtn");
+    var aboutCloseBtnEl = document.getElementById("aboutCloseBtn");
+    aboutBtnEl.addEventListener("click", function () {
+      aboutModal.classList.add("open");
+    });
+    aboutBtnEl.addEventListener("touchend", function (e) {
+      e.preventDefault();
+      aboutModal.classList.add("open");
+    });
+    aboutCloseBtnEl.addEventListener("click", function () {
+      aboutModal.classList.remove("open");
+    });
+    aboutModal.addEventListener("click", function (e) {
+      if (e.target === aboutModal) aboutModal.classList.remove("open");
+    });
+  } catch (errAbout) {
+    window.onerror("About modal setup failed: " + errAbout.message, "", 0);
+  }
+})();
+</script>
+</body>
+</html>
