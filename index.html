@@ -127,6 +127,40 @@
   }
   .working-title { color: #7C897F; font-size: 11px; letter-spacing: 0.5px; margin-bottom: 4px; }
   .working-step { padding: 2px 0; }
+
+  .voice-player { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #3A473E; }
+  .voice-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .voice-select {
+    background: #182019; border: 1px solid #3A473E; border-radius: 6px; color: #F1EFE7;
+    font-size: 12px; padding: 6px 8px; flex-shrink: 0;
+  }
+  .voice-btn {
+    background: #182019; border: 1px solid #3A473E; border-radius: 6px; color: #C9C4B5;
+    font-size: 12px; padding: 6px 10px; cursor: pointer; flex-shrink: 0;
+  }
+  .voice-btn.voice-play { color: #E8B34D; font-weight: 700; min-width: 56px; }
+  .voice-btn:disabled { opacity: 0.4; cursor: default; }
+  .voice-step-label { margin-top: 6px; color: #5F6C63; font-size: 11px; letter-spacing: 0.5px; }
+
+  .lang-select {
+    background: transparent; border: 1px solid #3A473E; border-radius: 8px; color: #9AA79E;
+    font-size: 12px; padding: 6px 8px; cursor: pointer;
+  }
+
+  .pro-btn {
+    width: 32px; height: 32px; border-radius: 8px; border: 1px solid #3A473E;
+    background: transparent; color: #E8B34D; display: flex; align-items: center;
+    justify-content: center; cursor: pointer;
+  }
+  .pro-btn:hover { border-color: #E8B34D; }
+  .plan-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+  .plan-table th, .plan-table td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #3A473E; vertical-align: top; }
+  .plan-table th { color: #9AA79E; font-size: 11px; letter-spacing: 0.5px; }
+  .plan-price { font-size: 20px; font-weight: 700; color: #E8B34D; margin: 4px 0 2px; }
+  .upgrade-btn {
+    width: 100%; border: none; border-radius: 8px; padding: 12px 0; margin-top: 14px;
+    background: #E8B34D; color: #182019; font-weight: 700; font-size: 14px; cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -144,12 +178,18 @@
       <div class="logo">=</div>
       <div class="brand">EquateAll</div>
     </div>
-    <button id="aboutBtn" class="about-btn" aria-label="About EquateAll" title="About EquateAll">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-    </button>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <select id="langSelect" class="lang-select" aria-label="Language" title="Language"></select>
+      <button id="proBtn" class="pro-btn" aria-label="Go Pro" title="Go Pro">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M5 19h14v2H5v-2zm0-2 2-8 5 4 5-9 2 13H5z"></path></svg>
+      </button>
+      <button id="aboutBtn" class="about-btn" aria-label="About EquateAll" title="About EquateAll">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+      </button>
+    </div>
   </div>
 
-  <div class="eyebrow">PICK A COURSE &middot; STATE THE PROBLEM &middot; GET IT SOLVED</div>
+  <div class="eyebrow" id="taglineText"></div>
   <div class="hero mono" id="hero"></div>
   <div class="underline-wrap">
     <svg id="underline" viewBox="0 0 240 14" width="160" height="14" style="overflow:visible;">
@@ -165,23 +205,47 @@
 <div id="aboutModal" class="modal-backdrop">
   <div class="modal-card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-      <div style="font-weight:700;font-size:17px;">About EquateAll</div>
+      <div style="font-weight:700;font-size:17px;" id="aboutTitleText"></div>
       <button id="aboutCloseBtn" class="modal-close" aria-label="Close">&times;</button>
     </div>
-    <div style="color:#C9C4B5;font-size:14px;line-height:1.6;margin-bottom:16px;">
-      EquateAll turns any course problem into a solved equation. Pick a subject &mdash; Math, Physics,
-      Chemistry, Biology, Economics, Computer Science, or Other &mdash; or just type, speak, or
-      photograph a problem in General, and EquateAll works it out and shows its steps, not just
-      the final answer.
-    </div>
+    <div style="color:#C9C4B5;font-size:14px;line-height:1.6;margin-bottom:16px;" id="aboutBodyText"></div>
     <div style="border-top:1px solid #3A473E;padding-top:14px;margin-bottom:10px;">
-      <div style="color:#9AA79E;font-size:12px;letter-spacing:0.5px;margin-bottom:3px;">FOUNDERS</div>
+      <div style="color:#9AA79E;font-size:12px;letter-spacing:0.5px;margin-bottom:3px;" id="foundersLabel"></div>
       <div style="font-size:14px;">o3tecworld</div>
     </div>
     <div>
-      <div style="color:#9AA79E;font-size:12px;letter-spacing:0.5px;margin-bottom:3px;">VERSION</div>
+      <div style="color:#9AA79E;font-size:12px;letter-spacing:0.5px;margin-bottom:3px;" id="versionLabel"></div>
       <div class="mono" style="font-size:14px;">1.0</div>
     </div>
+  </div>
+</div>
+
+<div id="proModal" class="modal-backdrop">
+  <div class="modal-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <div style="font-weight:700;font-size:17px;color:#E8B34D;" id="proTitleText"></div>
+      <button id="proCloseBtn" class="modal-close" aria-label="Close">&times;</button>
+    </div>
+    <table class="plan-table">
+      <thead>
+        <tr><th></th><th>Free</th><th>Pro</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>All subjects &amp; General solver</td><td>&#10003;</td><td>&#10003;</td></tr>
+        <tr><td>Type / speak / photograph input</td><td>&#10003;</td><td>&#10003;</td></tr>
+        <tr><td>Full working shown</td><td>&#10003;</td><td>&#10003;</td></tr>
+        <tr><td>Voice walkthrough (male &amp; female, play/pause/skip)</td><td>&#8212;</td><td>&#10003;</td></tr>
+        <tr><td>Unlimited camera scans</td><td>Limited/day</td><td>&#10003;</td></tr>
+        <tr><td>Ads</td><td>Yes</td><td>None</td></tr>
+        <tr><td>Saved solve history</td><td>&#8212;</td><td>&#10003;</td></tr>
+        <tr><td>Export solution to PDF</td><td>&#8212;</td><td>&#10003;</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:16px;">
+      <div class="plan-price">$2.99<span style="font-size:12px;color:#9AA79E;font-weight:400;"> /month</span></div>
+      <div style="color:#7C897F;font-size:12px;">or $14.99 one-time &mdash; prices are a starting point, adjustable before launch.</div>
+    </div>
+    <button class="upgrade-btn" id="upgradeBtn"></button>
   </div>
 </div>
 
@@ -224,7 +288,7 @@ window.onerror = function (msg, url, line, col, err) {
       .filter(function (v) { return v.key !== target; })
       .map(function (v) { return v.label + " = " + values[v.key] + (v.unit ? " " + v.unit : ""); })
       .join(", ");
-    if (given) steps.push("Given: " + given);
+    if (given) steps.push(t("given") + ": " + given);
     var tv = f.variables.filter(function (v) { return v.key === target; })[0];
     steps.push((tv ? tv.label : target) + " = " + resultValue + (tv && tv.unit ? " " + tv.unit : ""));
     if (extra) {
@@ -233,11 +297,223 @@ window.onerror = function (msg, url, line, col, err) {
     return steps;
   }
 
-  function renderWorkingHtml(steps) {
+  function renderWorkingHtml(steps, containerId) {
     if (!steps || steps.length === 0) return "";
-    return '<div class="working"><div class="working-title">WORKING</div>' +
+    return '<div class="working"><div class="working-title">' + t("working") + '</div>' +
       steps.map(function (s) { return '<div class="working-step mono">' + s + "</div>"; }).join("") +
-      "</div>";
+      "</div>" + renderVoicePlayerHtml(containerId);
+  }
+
+  function renderVoicePlayerHtml(playerId) {
+    if (!playerId) return "";
+    return '<div class="voice-player" id="voice-' + playerId + '">' +
+      '<div class="voice-row">' +
+      '<select id="voiceSel-' + playerId + '" class="voice-select">' +
+      '<option value="female">' + t("femaleVoice") + '</option>' +
+      '<option value="male">' + t("maleVoice") + '</option>' +
+      '</select>' +
+      '<button class="voice-btn" id="voicePrev-' + playerId + '" title="' + t("prev") + '">\u25c0\u25c0</button>' +
+      '<button class="voice-btn voice-play" id="voicePlay-' + playerId + '">' + t("play") + '</button>' +
+      '<button class="voice-btn" id="voiceNext-' + playerId + '" title="' + t("next") + '">\u25b6\u25b6</button>' +
+      '</div>' +
+      '<div class="voice-step-label" id="voiceStepLabel-' + playerId + '"></div>' +
+      '</div>';
+  }
+
+  function speechFriendly(s) {
+    return String(s)
+      .replace(/<[^>]+>/g, "")
+      .replace(/\^2/g, " squared")
+      .replace(/\^3/g, " cubed")
+      .replace(/\^(-?\d+(\.\d+)?)/g, " to the power of $1")
+      .replace(/\u00b1/g, " plus or minus ")
+      .replace(/\u221a/g, " square root of ")
+      .replace(/\u0394/g, " delta ")
+      .replace(/\u00d7/g, " times ")
+      .replace(/\u00f7/g, " divided by ")
+      .replace(/\*/g, " times ")
+      .replace(/\//g, " divided by ")
+      .replace(/\u2713/g, " check: ")
+      .replace(/\u2717/g, " cross: ")
+      .trim();
+  }
+
+  var voicePlayers = {};
+  var voicePlayerCounter = 0;
+
+  function attachVoicePlayer(playerId, rawSteps) {
+    if (!playerId || !rawSteps || !rawSteps.length) return;
+    voicePlayers[playerId] = { steps: rawSteps.map(speechFriendly), index: 0, playing: false };
+
+    var playBtn = document.getElementById("voicePlay-" + playerId);
+    var prevBtn = document.getElementById("voicePrev-" + playerId);
+    var nextBtn = document.getElementById("voiceNext-" + playerId);
+    var voiceSel = document.getElementById("voiceSel-" + playerId);
+    var stepLabel = document.getElementById("voiceStepLabel-" + playerId);
+    if (!playBtn || !prevBtn || !nextBtn || !voiceSel || !stepLabel) return;
+
+    var supported = !!window.speechSynthesis;
+    if (!supported) {
+      playBtn.disabled = true;
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+      stepLabel.textContent = "Voice playback isn\u2019t supported in this browser.";
+      return;
+    }
+
+    function updateLabel() {
+      var st = voicePlayers[playerId];
+      stepLabel.textContent = t("stepOf") + " " + (st.index + 1) + " / " + st.steps.length;
+    }
+    updateLabel();
+
+    function pickVoice() {
+      var voices = window.speechSynthesis.getVoices();
+      if (!voices.length) return null;
+      var wantFemale = voiceSel.value === "female";
+      var femaleHints = /female|zira|samantha|victoria|karen|susan|tessa|moira|fiona|serena/i;
+      var maleHints = /male|david|mark|daniel|alex|fred|george|james/i;
+      var match = voices.filter(function (v) { return wantFemale ? femaleHints.test(v.name) : maleHints.test(v.name); })[0];
+      if (match) return match;
+      var idx = wantFemale ? 0 : Math.min(1, voices.length - 1);
+      return voices[idx];
+    }
+
+    function speakCurrent() {
+      window.speechSynthesis.cancel();
+      var st = voicePlayers[playerId];
+      var utter = new SpeechSynthesisUtterance(st.steps[st.index]);
+      var v = pickVoice();
+      if (v) utter.voice = v;
+      utter.rate = 0.95;
+      utter.onend = function () {
+        var s = voicePlayers[playerId];
+        if (!s.playing) return;
+        if (s.index < s.steps.length - 1) {
+          s.index++;
+          updateLabel();
+          speakCurrent();
+        } else {
+          s.playing = false;
+          playBtn.textContent = t("play");
+        }
+      };
+      window.speechSynthesis.speak(utter);
+    }
+
+    playBtn.onclick = function () {
+      var st = voicePlayers[playerId];
+      if (st.playing) {
+        window.speechSynthesis.cancel();
+        st.playing = false;
+        playBtn.textContent = t("play");
+      } else {
+        st.playing = true;
+        playBtn.textContent = t("pause");
+        speakCurrent();
+      }
+    };
+    prevBtn.onclick = function () {
+      var st = voicePlayers[playerId];
+      if (st.index > 0) st.index--;
+      updateLabel();
+      if (st.playing) speakCurrent();
+    };
+    nextBtn.onclick = function () {
+      var st = voicePlayers[playerId];
+      if (st.index < st.steps.length - 1) st.index++;
+      updateLabel();
+      if (st.playing) speakCurrent();
+    };
+  }
+
+
+  var LANG = {
+    en: {
+      tagline: "PICK A COURSE \u00b7 STATE THE PROBLEM \u00b7 GET IT SOLVED",
+      solveFor: "Solve for", given: "Given", working: "WORKING", equation: "Equation",
+      unknownVar: "Unknown variable", solve: "Solve", speakTitle: "Speak the equation",
+      photoTitle: "Photograph the equation",
+      generalTitle: "Type any equation",
+      generalHint: "Works for algebra from any subject \u2014 physics, chemistry, economics, whatever has a single unknown. Powers use ^ (e.g. x^2), and skip function labels like \"f(x) =\" \u2014 just start from the equation itself.",
+      hintOther: "Don\u2019t see the formula you need? Switch to <strong>General</strong> \u2014 type or speak any equation and it solves for the unknown directly.",
+      aboutTitle: "About EquateAll",
+      aboutBody: "EquateAll turns any course problem into a solved equation. Pick a subject \u2014 Math, Physics, Chemistry, Biology, Economics, Computer Science, or Other \u2014 or just type, speak, or photograph a problem in General, and EquateAll works it out and shows its steps, not just the final answer.",
+      founders: "FOUNDERS", version: "VERSION",
+      proTitle: "EquateAll Pro", proBtn: "Go Pro", upgradeBtn: "Upgrade to Pro",
+      readAs: "Read as", play: "Play", pause: "Pause", prev: "Prev", next: "Next",
+      voice: "Voice", femaleVoice: "Female voice", maleVoice: "Male voice",
+      stepOf: "Step",
+      searchWeb: "Search the web for an answer", searching: "Searching\u2026",
+      webNotConfigured: "The web search isn\u2019t connected yet.", webNoAnswer: "Couldn\u2019t find an answer for that.",
+      viaWolfram: "via Wolfram Alpha"
+    },
+    es: {
+      tagline: "ELIGE UNA MATERIA \u00b7 PLANTEA EL PROBLEMA \u00b7 OBT\u00c9N LA SOLUCI\u00d3N",
+      solveFor: "Resolver para", given: "Dado", working: "PROCEDIMIENTO", equation: "Ecuaci\u00f3n",
+      unknownVar: "Variable desconocida", solve: "Resolver", speakTitle: "Dictar la ecuaci\u00f3n",
+      photoTitle: "Fotografiar la ecuaci\u00f3n",
+      generalTitle: "Escribe cualquier ecuaci\u00f3n",
+      generalHint: "Funciona con \u00e1lgebra de cualquier materia \u2014 f\u00edsica, qu\u00edmica, econom\u00eda, lo que tenga una sola inc\u00f3gnita. Las potencias usan ^ (ej. x^2), y omite etiquetas como \"f(x) =\" \u2014 empieza directamente con la ecuaci\u00f3n.",
+      hintOther: "\u00bfNo encuentras la f\u00f3rmula que necesitas? Cambia a <strong>General</strong> \u2014 escribe o dicta cualquier ecuaci\u00f3n y resuelve la inc\u00f3gnita directamente.",
+      aboutTitle: "Acerca de EquateAll",
+      aboutBody: "EquateAll convierte cualquier problema en una ecuaci\u00f3n resuelta. Elige una materia \u2014 Matem\u00e1ticas, F\u00edsica, Qu\u00edmica, Biolog\u00eda, Econom\u00eda, Inform\u00e1tica u Otra \u2014 o simplemente escribe, dicta o fotograf\u00eda un problema en General, y EquateAll lo resuelve mostrando cada paso, no solo la respuesta final.",
+      founders: "FUNDADORES", version: "VERSI\u00d3N",
+      proTitle: "EquateAll Pro", proBtn: "Hazte Pro", upgradeBtn: "Mejorar a Pro",
+      readAs: "Interpretado como", play: "Reproducir", pause: "Pausar", prev: "Anterior", next: "Siguiente",
+      voice: "Voz", femaleVoice: "Voz femenina", maleVoice: "Voz masculina",
+      stepOf: "Paso",
+      searchWeb: "Buscar una respuesta en la web", searching: "Buscando\u2026",
+      webNotConfigured: "La b\u00fasqueda web a\u00fan no est\u00e1 conectada.", webNoAnswer: "No se encontr\u00f3 una respuesta.",
+      viaWolfram: "v\u00eda Wolfram Alpha"
+    },
+    fr: {
+      tagline: "CHOISIS UNE MATI\u00c8RE \u00b7 POSE LE PROBL\u00c8ME \u00b7 OBTIENS LA SOLUTION",
+      solveFor: "R\u00e9soudre pour", given: "Donn\u00e9es", working: "D\u00c9TAIL", equation: "\u00c9quation",
+      unknownVar: "Variable inconnue", solve: "R\u00e9soudre", speakTitle: "Dicter l\u2019\u00e9quation",
+      photoTitle: "Photographier l\u2019\u00e9quation",
+      generalTitle: "Tape n\u2019importe quelle \u00e9quation",
+      generalHint: "Fonctionne avec l\u2019alg\u00e8bre de toute mati\u00e8re \u2014 physique, chimie, \u00e9conomie, tout ce qui a une seule inconnue. Les puissances utilisent ^ (ex. x^2), et pas besoin d\u2019\u00e9crire \"f(x) =\" \u2014 commence directement par l\u2019\u00e9quation.",
+      hintOther: "Tu ne trouves pas la formule ? Passe \u00e0 <strong>General</strong> \u2014 tape ou dicte n\u2019importe quelle \u00e9quation, elle r\u00e9sout l\u2019inconnue directement.",
+      aboutTitle: "\u00c0 propos d\u2019EquateAll",
+      aboutBody: "EquateAll transforme n\u2019importe quel probl\u00e8me en \u00e9quation r\u00e9solue. Choisis une mati\u00e8re \u2014 Maths, Physique, Chimie, Biologie, \u00c9conomie, Informatique ou Autre \u2014 ou tape, dicte, ou photographie un probl\u00e8me dans G\u00e9n\u00e9ral, et EquateAll le r\u00e9sout en montrant chaque \u00e9tape, pas seulement la r\u00e9ponse finale.",
+      founders: "FONDATEURS", version: "VERSION",
+      proTitle: "EquateAll Pro", proBtn: "Passer Pro", upgradeBtn: "Passer \u00e0 Pro",
+      readAs: "Compris comme", play: "Lecture", pause: "Pause", prev: "Pr\u00e9c\u00e9dent", next: "Suivant",
+      voice: "Voix", femaleVoice: "Voix f\u00e9minine", maleVoice: "Voix masculine",
+      stepOf: "\u00c9tape",
+      searchWeb: "Chercher une r\u00e9ponse sur le web", searching: "Recherche\u2026",
+      webNotConfigured: "La recherche web n\u2019est pas encore connect\u00e9e.", webNoAnswer: "Aucune r\u00e9ponse trouv\u00e9e.",
+      viaWolfram: "via Wolfram Alpha"
+    },
+    pcm: {
+      tagline: "PICK YOUR SUBJECT \u00b7 TALK YOUR PROBLEM \u00b7 GET THE ANSWER",
+      solveFor: "Solve for", given: "Wetin dem give", working: "HOW E WORK",
+      equation: "Equation", unknownVar: "Di one wey no known", solve: "Solve am",
+      speakTitle: "Talk di equation", photoTitle: "Snap di equation",
+      generalTitle: "Type any equation wey you get",
+      generalHint: "E go work for any subject work \u2014 physics, chemistry, economics, anything wey get just one unknown. Use ^ for power (like x^2), no need to type \"f(x) =\" \u2014 just start from di equation.",
+      hintOther: "You no see di formula wey you want? Use <strong>General</strong> \u2014 type or talk any equation, e go solve di unknown straight.",
+      aboutTitle: "About EquateAll",
+      aboutBody: "EquateAll dey turn any subject problem to solved equation. Pick subject \u2014 Math, Physics, Chemistry, Biology, Economics, Computer Science, or Other \u2014 or just type, talk, or snap your problem for General, EquateAll go solve am and show you how e work, no be just di answer.",
+      founders: "WHO START AM", version: "VERSION",
+      proTitle: "EquateAll Pro", proBtn: "Go Pro", upgradeBtn: "Upgrade go Pro",
+      readAs: "E read am as", play: "Play", pause: "Pause", prev: "Go back", next: "Go forward",
+      voice: "Voice", femaleVoice: "Woman voice", maleVoice: "Man voice",
+      stepOf: "Step",
+      searchWeb: "Search di web for answer", searching: "E dey search\u2026",
+      webNotConfigured: "Web search never connect yet.", webNoAnswer: "E no fit find answer for that one.",
+      viaWolfram: "from Wolfram Alpha"
+    }
+  };
+  var LANG_NAMES = { en: "English", es: "Espa\u00f1ol", fr: "Fran\u00e7ais", pcm: "Pidgin" };
+  var currentLang = "en";
+
+  // Set this to your deployed Netlify function URL once available, e.g.
+  // "https://your-site-name.netlify.app/.netlify/functions/solve"
+  var WOLFRAM_FUNCTION_URL = "https://equateall.netlify.app/.netlify/functions/solve";
+  function t(key) {
+    return (LANG[currentLang] && LANG[currentLang][key]) || LANG.en[key] || key;
   }
 
   var SUBJECTS = [
@@ -950,20 +1226,20 @@ window.onerror = function (msg, url, line, col, err) {
     wrap.style.setProperty("--accent-a", hexToRgba(accent, 0.35));
     wrap.innerHTML =
       '<div style="padding:16px;">' +
-      '<div class="card-title" style="margin-bottom:2px;">Type any equation</div>' +
-      '<div style="color:#9AA79E;font-size:13px;margin-bottom:12px;">Works for algebra from any subject \u2014 physics, chemistry, economics, whatever has a single unknown. Powers use ^ (e.g. x^2), and skip function labels like "f(x) =" \u2014 just start from the equation itself.</div>' +
-      fieldBlock("Equation", '<div class="eq-row"><input type="text" id="genEq" value="2*x + 5 = 15" placeholder="e.g. 3*x^2 - 12 = 0" />' +
-        '<button class="mic-btn" id="micBtn" style="--accent:' + accent + ';" title="Speak the equation" aria-label="Speak the equation">' +
+      '<div class="card-title" style="margin-bottom:2px;">' + t("generalTitle") + '</div>' +
+      '<div style="color:#9AA79E;font-size:13px;margin-bottom:12px;">' + t("generalHint") + '</div>' +
+      fieldBlock(t("equation"), '<div class="eq-row"><input type="text" id="genEq" value="2*x + 5 = 15" placeholder="e.g. 3*x^2 - 12 = 0" />' +
+        '<button class="mic-btn" id="micBtn" style="--accent:' + accent + ';" title="' + t("speakTitle") + '" aria-label="' + t("speakTitle") + '">' +
         '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>' +
         "</button>" +
-        '<button class="cam-btn" id="camBtn" style="--accent:' + accent + ';" title="Photograph the equation" aria-label="Photograph the equation">' +
+        '<button class="cam-btn" id="camBtn" style="--accent:' + accent + ';" title="' + t("photoTitle") + '" aria-label="' + t("photoTitle") + '">' +
         '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>' +
         "</button>" +
         '<input type="file" accept="image/*" capture="environment" id="camFile" style="display:none;" />' +
         "</div>") +
       '<div id="micStatus"></div>' +
-      fieldBlock("Unknown variable", '<input type="text" id="genVar" value="x" style="width:80px;" />') +
-      '<button class="solve-btn" id="genSolveBtn" style="--accent:' + accent + ';">Solve</button>' +
+      fieldBlock(t("unknownVar"), '<input type="text" id="genVar" value="x" style="width:80px;" />') +
+      '<button class="solve-btn" id="genSolveBtn" style="--accent:' + accent + ';">' + t("solve") + '</button>' +
       '<div id="genResult"></div>' +
       "</div>";
     var content = document.getElementById("content");
@@ -984,26 +1260,75 @@ window.onerror = function (msg, url, line, col, err) {
         if (detectedVar) document.getElementById("genVar").value = detectedVar;
 
         var result = solveGeneral(normalized, vr);
-        var html = '<div style="color:#7C897F;font-size:12px;margin-bottom:6px;">Read as: <span class="mono">' + normalized + "</span></div>";
+        var html = '<div style="color:#7C897F;font-size:12px;margin-bottom:6px;">' + t("readAs") + ': <span class="mono">' + normalized + "</span></div>";
         var workingSteps = [];
+        var summaryLine = "";
         if (result.type === "value") {
           html += "= <strong>" + result.value + "</strong>";
-          workingSteps = [result.lhs + " = " + result.value];
+          summaryLine = result.lhs + " = " + result.value;
+          workingSteps = [summaryLine];
         } else if (result.type === "check") {
           html += result.equal
             ? "\u2713 Checks out \u2014 both sides equal " + result.left
             : "\u2717 Not equal \u2014 left = " + result.left + ", right = " + result.right;
+          summaryLine = result.equal ? "Both sides equal " + result.left : "Left is " + result.left + ", right is " + result.right;
           workingSteps = [result.lhs + " = " + result.left, result.rhs + " = " + result.right];
         } else {
           html += vr + " = " + result.roots.join(",  ");
+          summaryLine = vr + " = " + result.roots.join(" or " + vr + " = ");
           workingSteps = analyzeGeneralWorking(result.lhs, result.rhs, result.varName, result.roots);
         }
-        html += renderWorkingHtml(workingSteps);
+        var pidG = "pid" + (voicePlayerCounter++);
+        html += renderWorkingHtml(workingSteps, pidG);
         out.innerHTML = '<div class="msg result" style="--accent-a:' + accentA + ';">' + html + "</div>";
+        attachVoicePlayer(pidG, [summaryLine].concat(workingSteps));
       } catch (e) {
-        out.innerHTML = '<div class="msg error">' + e.message + "</div>";
+        var origRaw = raw;
+        out.innerHTML =
+          '<div class="msg error">' + e.message + "</div>" +
+          '<button class="solve-btn" id="webFallbackBtn" style="--accent:#5FB3D9;margin-top:8px;">' + t("searchWeb") + "</button>" +
+          '<div id="webFallbackResult"></div>';
+        var fbBtn = document.getElementById("webFallbackBtn");
+        if (fbBtn) {
+          fbBtn.onclick = function () { runWebFallback(origRaw, "webFallbackResult", fbBtn); };
+        }
       }
     };
+  }
+
+  function runWebFallback(query, resultElId, btnEl) {
+    var el = document.getElementById(resultElId);
+    if (!WOLFRAM_FUNCTION_URL) {
+      el.innerHTML = '<div class="msg error">' + t("webNotConfigured") + "</div>";
+      return;
+    }
+    btnEl.disabled = true;
+    btnEl.textContent = t("searching");
+    el.innerHTML = "";
+    fetch(WOLFRAM_FUNCTION_URL + "?input=" + encodeURIComponent(query))
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        btnEl.disabled = false;
+        btnEl.textContent = t("searchWeb");
+        if (data.error) {
+          el.innerHTML = '<div class="msg error">' + data.error + "</div>";
+          return;
+        }
+        if (!data.answer) {
+          el.innerHTML = '<div class="msg error">' + t("webNoAnswer") + "</div>";
+          return;
+        }
+        el.innerHTML =
+          '<div class="msg result" style="--accent-a:rgba(95,179,217,0.35);">' +
+          '<div style="white-space:pre-line;">' + data.answer.replace(/</g, "&lt;") + "</div>" +
+          '<div style="margin-top:8px;color:#5F6C63;font-size:11px;">' + t("viaWolfram") + "</div>" +
+          "</div>";
+      })
+      .catch(function (err) {
+        btnEl.disabled = false;
+        btnEl.textContent = t("searchWeb");
+        el.innerHTML = '<div class="msg error">' + t("webNoAnswer") + " (" + err.message + ")</div>";
+      });
   }
 
   function renderFormulaCard(f, accent) {
@@ -1038,7 +1363,7 @@ window.onerror = function (msg, url, line, col, err) {
           var lbl = v.label + (v.unit ? " (" + v.unit + ")" : "");
           return '<option value="' + v.key + '"' + (v.key === target ? " selected" : "") + ">" + lbl + "</option>";
         }).join("");
-        html += fieldBlock("Solve for", '<select id="target-' + f.id + '">' + opts + "</select>");
+        html += fieldBlock(t("solveFor"), '<select id="target-' + f.id + '">' + opts + "</select>");
       }
 
       var inputVars = f.quadratic ? f.variables : f.variables.filter(function (v) { return v.key !== target; });
@@ -1049,17 +1374,17 @@ window.onerror = function (msg, url, line, col, err) {
         html += fieldBlock(lbl, '<input type="number" inputmode="decimal" placeholder="0" data-key="' + v.key + '" class="varInput-' + f.id + '" value="' + existing + '" />');
       });
       html += "</div>";
-      html += '<button class="solve-btn" id="solveBtn-' + f.id + '" style="--accent:' + accent + ';">Solve</button>';
+      html += '<button class="solve-btn" id="solveBtn-' + f.id + '" style="--accent:' + accent + ';">' + t("solve") + '</button>';
       html += '<div id="result-' + f.id + '"></div>';
       body.innerHTML = html;
     }
 
     card.appendChild(body);
 
-    if (isOpen) {
-      var content = document.getElementById("content");
-      content.appendChild(card);
+    var content = document.getElementById("content");
+    content.appendChild(card);
 
+    if (isOpen) {
       var targetSel = document.getElementById("target-" + f.id);
       if (targetSel) {
         targetSel.onchange = function () {
@@ -1091,8 +1416,10 @@ window.onerror = function (msg, url, line, col, err) {
           if (f.quadratic) {
             var roots = f.solveRoots(parsed);
             var stepsQ = buildFormulaSteps(f, parsed, "roots", roots);
+            var pidQ = "pid" + (voicePlayerCounter++);
             out.innerHTML = '<div class="msg result" style="--accent-a:' + hexToRgba(accent, 0.35) + ';">x = ' + roots[0] + " or x = " + roots[1] +
-              renderWorkingHtml(stepsQ) + "</div>";
+              renderWorkingHtml(stepsQ, pidQ) + "</div>";
+            attachVoicePlayer(pidQ, ["x = " + roots[0] + " or x = " + roots[1]].concat(stepsQ));
           } else {
             var val = f.solve(parsed, currentTarget);
             var tv = f.variables.filter(function (v) { return v.key === currentTarget; })[0];
@@ -1104,9 +1431,11 @@ window.onerror = function (msg, url, line, col, err) {
                 Object.keys(extraVal).map(function (k) { return k + ": " + extraVal[k]; }).join("<br/>") + "</div>";
             }
             var stepsF = buildFormulaSteps(f, parsed, currentTarget, round(val), extraVal);
+            var pidF = "pid" + (voicePlayerCounter++);
             out.innerHTML = '<div class="msg result" style="--accent-a:' + hexToRgba(accent, 0.35) + ';">' +
               tv.label + " = <strong>" + round(val) + "</strong> " + (tv.unit || "") + extraHtml +
-              renderWorkingHtml(stepsF) + "</div>";
+              renderWorkingHtml(stepsF, pidF) + "</div>";
+            attachVoicePlayer(pidF, [tv.label + " = " + round(val) + " " + (tv.unit || "")].concat(stepsF));
           }
         } catch (e) {
           out.innerHTML = '<div class="msg error">' + e.message + "</div>";
@@ -1142,7 +1471,7 @@ window.onerror = function (msg, url, line, col, err) {
     if (state.subject !== "general") {
       var hint = document.createElement("div");
       hint.className = "hint";
-      hint.innerHTML = 'Don\'t see the formula you need? Switch to <strong>General</strong> \u2014 type or speak any equation and it solves for the unknown directly.';
+      hint.innerHTML = t("hintOther");
       content.appendChild(hint);
     }
   }
@@ -1195,6 +1524,62 @@ window.onerror = function (msg, url, line, col, err) {
     });
   } catch (errAbout) {
     window.onerror("About modal setup failed: " + errAbout.message, "", 0);
+  }
+
+  /* ---- pro modal ---- */
+  try {
+    var proModal = document.getElementById("proModal");
+    var proBtnEl = document.getElementById("proBtn");
+    var proCloseBtnEl = document.getElementById("proCloseBtn");
+    var upgradeBtnEl = document.getElementById("upgradeBtn");
+    proBtnEl.addEventListener("click", function () { proModal.classList.add("open"); });
+    proCloseBtnEl.addEventListener("click", function () { proModal.classList.remove("open"); });
+    proModal.addEventListener("click", function (e) {
+      if (e.target === proModal) proModal.classList.remove("open");
+    });
+    upgradeBtnEl.addEventListener("click", function () {
+      upgradeBtnEl.textContent = "Payments aren\u2019t set up yet \u2014 coming soon!";
+      setTimeout(function () { upgradeBtnEl.textContent = t("upgradeBtn"); }, 2500);
+    });
+  } catch (errPro) {
+    window.onerror("Pro modal setup failed: " + errPro.message, "", 0);
+  }
+
+  /* ---- language selector ---- */
+  function applyStaticTranslations() {
+    var taglineEl = document.getElementById("taglineText");
+    var aboutTitleEl = document.getElementById("aboutTitleText");
+    var aboutBodyEl = document.getElementById("aboutBodyText");
+    var foundersLabelEl = document.getElementById("foundersLabel");
+    var versionLabelEl = document.getElementById("versionLabel");
+    var proTitleEl = document.getElementById("proTitleText");
+    var upgradeBtnEl2 = document.getElementById("upgradeBtn");
+    if (taglineEl) taglineEl.textContent = t("tagline");
+    if (aboutTitleEl) aboutTitleEl.textContent = t("aboutTitle");
+    if (aboutBodyEl) aboutBodyEl.textContent = t("aboutBody");
+    if (foundersLabelEl) foundersLabelEl.textContent = t("founders");
+    if (versionLabelEl) versionLabelEl.textContent = t("version");
+    if (proTitleEl) proTitleEl.textContent = t("proTitle");
+    if (upgradeBtnEl2) upgradeBtnEl2.textContent = t("upgradeBtn");
+  }
+
+  try {
+    var langSelectEl = document.getElementById("langSelect");
+    Object.keys(LANG_NAMES).forEach(function (code) {
+      var opt = document.createElement("option");
+      opt.value = code;
+      opt.textContent = LANG_NAMES[code];
+      langSelectEl.appendChild(opt);
+    });
+    langSelectEl.value = currentLang;
+    langSelectEl.addEventListener("change", function () {
+      currentLang = langSelectEl.value;
+      applyStaticTranslations();
+      renderAll();
+    });
+    applyStaticTranslations();
+  } catch (errLang) {
+    window.onerror("Language setup failed: " + errLang.message, "", 0);
   }
 })();
 </script>
